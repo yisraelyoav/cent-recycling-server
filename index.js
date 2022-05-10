@@ -2,12 +2,17 @@ const express = require("express");
 const bodyParser = require("body-parser");
 
 const itemsRouter = require("./Routes/items-routes");
-const { Error } = require("mongoose");
+const HttpError = require("./DL/models/http-error");
 
 const app = express();
 app.use(bodyParser.json());
 
 app.use("/api/items", itemsRouter);
+
+app.use((req, res, next) => {
+  const error = new HttpError("could not find this route", 404);
+  throw error;
+});
 
 app.use((error, req, res, next) => {
   // error handeling middleware

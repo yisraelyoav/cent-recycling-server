@@ -13,4 +13,8 @@ router.get("/byuser/:Uid", itemsController.getItemsByUserID);
 
 router.post("/", itemsController.createItem);
 
+router.patch("/:itmID", itemsController.updateItem);
+
+router.delete("/:itmID", itemsController.deleteItem);
+
 module.exports = router;
