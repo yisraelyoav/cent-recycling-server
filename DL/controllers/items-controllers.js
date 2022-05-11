@@ -1,5 +1,7 @@
 const HttpError = require("../models/http-error");
 const uuid = require("uuid");
+const { validationResult } = require("express-validator");
+
 let DUMMY_ITEMS = [
   {
     id: "i1",
@@ -35,6 +37,9 @@ let DUMMY_ITEMS = [
     owner: "u1",
   },
 ];
+async function getAllItems(req, res, next) {
+  res.status(200).json({ items: DUMMY_ITEMS });
+}
 
 async function getItemByID(req, res, next) {
   const itemID = req.params.itmID;
@@ -82,20 +87,25 @@ async function createItem(req, res, next) {
 }
 
 async function updateItem(req, res, next) {
-  const { title, image, description, coordinates, address } = req.body;
-  const itemID = req.params.itmID;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(new HttpError("Invalid input, please check your data", 422));
+  } else {
+    const { title, image, description, coordinates, address } = req.body;
+    const itemID = req.params.itmID;
 
-  const updatedItem = { ...DUMMY_ITEMS.find((i) => i.id === itemID) }; // updateing diffrent variable in case that something occur in the middle of the updateing
-  const itemIndex = DUMMY_ITEMS.findIndex((i) => i.id === itemID);
-  updatedItem.title = title;
-  updatedItem.description = description;
-  updatedItem.image = image;
-  updatedItem.coordinates = coordinates;
-  updatedItem.address = address;
+    const updatedItem = { ...DUMMY_ITEMS.find((i) => i.id === itemID) }; // updateing diffrent variable in case that something occur in the middle of the updateing
+    const itemIndex = DUMMY_ITEMS.findIndex((i) => i.id === itemID);
+    updatedItem.title = title;
+    updatedItem.description = description;
+    updatedItem.image = image;
+    updatedItem.coordinates = coordinates;
+    updatedItem.address = address;
 
-  DUMMY_ITEMS[itemIndex] = updatedItem; // updateing the original object
+    DUMMY_ITEMS[itemIndex] = updatedItem; // updateing the original object
 
-  res.status(200).json({ item: updatedItem });
+    res.status(200).json({ item: updatedItem });
+  }
 }
 
 async function deleteItem(req, res, next) {
@@ -104,6 +114,7 @@ async function deleteItem(req, res, next) {
   res.status(200).json({ message: "Item deleted successfully." });
 }
 
+exports.getAllItems = getAllItems;
 exports.getItemByID = getItemByID;
 exports.getItemsByUserID = getItemsByUserID;
 exports.createItem = createItem;
