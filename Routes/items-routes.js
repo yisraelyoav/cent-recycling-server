@@ -11,12 +11,17 @@ router.get("/:itmID", itemsController.getItemByID);
 
 router.get("/byuser/:Uid", itemsController.getItemsByUserID);
 
-router.post("/", itemsController.createItem);
+router.post(
+  "/",
+  check("title").notEmpty(),
+  check("address").notEmpty(),
+  itemsController.createItem
+);
 
 router.patch(
   "/:itmID",
-  check("title").not().isEmpty(),
-  check("address").not().isEmpty(),
+  check("title").notEmpty(),
+  check("address").notEmpty(),
   itemsController.updateItem
 );
 

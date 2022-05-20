@@ -16,8 +16,9 @@ app.use((req, res, next) => {
   throw error;
 });
 
+// error handeling middleware
+
 app.use((error, req, res, next) => {
-  // error handeling middleware
   if (res.headerSent) {
     return next(error);
   }

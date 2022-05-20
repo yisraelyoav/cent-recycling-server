@@ -1,7 +1,7 @@
 const HttpError = require("../models/http-error");
 const uuid = require("uuid");
 const { validationResult } = require("express-validator");
-
+const getCoordinatesForAddress = require("../../util/location");
 let DUMMY_ITEMS = [
   {
     id: "i1",
@@ -70,8 +70,18 @@ async function getItemsByUserID(req, res, next) {
 }
 
 async function createItem(req, res, next) {
-  const { title, image, description, coordinates, address, owner } = req.body;
-
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    console.log(errors);
+    return next(new HttpError("Invalid input, please check your data", 422));
+  }
+  const { title, image, description, address, owner } = req.body;
+  let coordinates;
+  try {
+    coordinates = await getCoordinatesForAddress(address);
+  } catch (error) {
+    return next(error);
+  }
   const createItem = {
     id: uuid.v4(),
     title,
@@ -109,7 +119,10 @@ async function updateItem(req, res, next) {
 }
 
 async function deleteItem(req, res, next) {
-  itemID = req.params.itmID;
+  const itemID = req.params.itmID;
+  if (!DUMMY_ITEMS.find((i) => i.id === itemID)) {
+    return next(new HttpError("Could not find an item for that ID", 404));
+  }
   DUMMY_ITEMS = DUMMY_ITEMS.filter((i) => i.id != itemID);
   res.status(200).json({ message: "Item deleted successfully." });
 }
