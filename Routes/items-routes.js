@@ -3,28 +3,35 @@ const { check } = require("express-validator");
 
 const router = express.Router();
 
-const itemsController = require("../DL/controllers/items-controllers");
+const itemsLogic = require("../BL/itemsLogic");
 
-router.get("/", itemsController.getAllItems);
+router.get("/", async (req, res) => {
+  try {
+    console.log("items router");
+    res.send(await itemsLogic.getAllItems());
+  } catch (err) {
+    res.send(err);
+  }
+});
 
-router.get("/:itmID", itemsController.getItemByID);
+router.get("/:itmID", itemsLogic.getItemByID);
 
-router.get("/byuser/:Uid", itemsController.getItemsByUserID);
+router.get("/byuser/:Uid", itemsLogic.getItemsByUserID);
 
 router.post(
   "/",
   check("title").notEmpty(),
   check("address").notEmpty(),
-  itemsController.createItem
+  itemsLogic.createItem
 );
 
 router.patch(
   "/:itmID",
   check("title").notEmpty(),
   check("address").notEmpty(),
-  itemsController.updateItem
+  itemsLogic.updateItem
 );
 
-router.delete("/:itmID", itemsController.deleteItem);
+router.delete("/:itmID", itemsLogic.deleteItem);
 
 module.exports = router;

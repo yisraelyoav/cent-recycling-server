@@ -1,44 +1,26 @@
-const HttpError = require("../models/http-error");
-const uuid = require("uuid");
+const HttpError = require("../DL/models/httpError");
+// const uuid = require("uuid");
 const { validationResult } = require("express-validator");
-const getCoordinatesForAddress = require("../../util/location");
-let DUMMY_ITEMS = [
-  {
-    id: "i1",
-    title: "tessla",
-    description: "tessla model x",
-    location: {
-      lat: 32.0504941,
-      lng: 35.345551,
-    },
-    adress: "kida",
-    owner: "u1",
-  },
-  {
-    id: "i2",
-    title: "action figures set",
-    description: "Avengers Endgame set collection",
-    location: {
-      lat: 32.0504941,
-      lng: 35.345551,
-    },
-    address: "East kida",
-    owner: "u2",
-  },
-  {
-    id: "i4",
-    title: "gum",
-    description: "orbit gum",
-    location: {
-      lat: 32.0504941,
-      lng: 35.345551,
-    },
-    adress: "trash",
-    owner: "u1",
-  },
-];
+const getCoordinatesForAddress = require("../util/location");
+const items = require("../DL/controllers/itemsControllers");
+// let DUMMY_ITEMS = [
+
+//   {
+//     title: "gum",
+//     description: "orbit gum",
+//     location: {
+//       lat: 32.0504941,
+//       lng: 35.345551,
+//     },
+//     address: "trash",
+//     owner: "u1",
+//   },
+// ];
+
 async function getAllItems(req, res, next) {
-  res.status(200).json({ items: DUMMY_ITEMS });
+  const allItems = await items.read();
+  console.log(allItems);
+  return allItems;
 }
 
 async function getItemByID(req, res, next) {
@@ -82,18 +64,24 @@ async function createItem(req, res, next) {
   } catch (error) {
     return next(error);
   }
-  const createItem = {
-    id: uuid.v4(),
+  const createdItem = new items({
     title,
     image,
     description,
-    location: coordinates,
     address,
+    location: coordinates,
     owner,
-  };
-  DUMMY_ITEMS.unshift(createItem);
-
-  res.status(201).json({ item: createItem });
+  });
+  try {
+    await createdItem.save();
+  } catch (err) {
+    const error = new HttpError(
+      "Creating new item failed, please try again",
+      500
+    );
+    return next(error);
+  }
+  res.status(201).json({ item: createdItem });
 }
 
 async function updateItem(req, res, next) {
@@ -101,11 +89,17 @@ async function updateItem(req, res, next) {
   if (!errors.isEmpty()) {
     return next(new HttpError("Invalid input, please check your data", 422));
   } else {
-    const { title, image, description, coordinates, address } = req.body;
+    const { title, image, description, address } = req.body;
     const itemID = req.params.itmID;
 
     const updatedItem = { ...DUMMY_ITEMS.find((i) => i.id === itemID) }; // updateing diffrent variable in case that something occur in the middle of the updateing
     const itemIndex = DUMMY_ITEMS.findIndex((i) => i.id === itemID);
+    let coordinates;
+    try {
+      coordinates = await getCoordinatesForAddress(address);
+    } catch (error) {
+      return next(error);
+    }
     updatedItem.title = title;
     updatedItem.description = description;
     updatedItem.image = image;
