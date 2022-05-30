@@ -12,10 +12,10 @@ app.use(bodyParser.json());
 app.use("/api/items", itemsRouter);
 app.use("/api/users", usersRouter);
 
-app.use((req, res, next) => {
-  const error = new HttpError("could not find this route", 404);
-  throw error;
-});
+// app.use((req, res, next) => {
+//   const error = new HttpError("could not find this route", 404);
+//   throw error;
+// });
 
 // error handeling middleware
 
@@ -26,6 +26,7 @@ app.use((error, req, res, next) => {
   res.status(error.code || 500);
   res.json({ message: error.message || "An unknoen error occurred!" });
 });
+
 const mongo_url = process.env.MONGO_URL;
 mongoose
   .connect(mongo_url)

@@ -1,70 +1,75 @@
 const HttpError = require("../DL/models/httpError");
-// const uuid = require("uuid");
 const { validationResult } = require("express-validator");
 const getCoordinatesForAddress = require("../util/location");
-const items = require("../DL/controllers/itemsControllers");
-// let DUMMY_ITEMS = [
+const itemsControllers = require("../DL/controllers/itemsControllers");
+// const uuid = require("uuid");
 
-//   {
-//     title: "gum",
-//     description: "orbit gum",
-//     location: {
-//       lat: 32.0504941,
-//       lng: 35.345551,
-//     },
-//     address: "trash",
-//     owner: "u1",
-//   },
-// ];
-
-async function getAllItems(req, res, next) {
-  const allItems = await items.read();
-  console.log(allItems);
+//get all items- connect to the DB- fix the errors res
+async function getAllItems(req) {
+  const allItems = await itemsControllers.read();
   return allItems;
 }
-
-async function getItemByID(req, res, next) {
+//get item by id connect to the DB- fix the errors res
+async function getItemByID(req) {
   const itemID = req.params.itmID;
-  const item = DUMMY_ITEMS.find((i) => {
-    return i.id === itemID;
-  });
-  if (!item) {
-    return next(
-      new HttpError("Could not find a an item for the provided id.", 404)
+  let item;
+  try {
+    item = await itemsControllers.readOne({ _id: itemID });
+    if (!item) {
+      const error = new HttpError(
+        "Could not find a an item for the provided id.",
+        404
+      );
+      return error;
+    } else {
+      return item;
+    }
+  } catch {
+    const error = new HttpError(
+      "Something went wrong, could not find an item.",
+      500
     );
-  } else {
-    res.json({ item });
+    return error;
   }
 }
-
-async function getItemsByUserID(req, res, next) {
-  const itemsByUserID = req.params.Uid;
-  const items = DUMMY_ITEMS.filter((i) => {
-    return i.owner === itemsByUserID;
-  });
+// get item by user id
+async function getItemsByUserID(req, res) {
+  const userID = req.params.Uid;
+  let items;
+  try {
+    items = await itemsControllers.read({ owner: userID });
+  } catch {
+    const error = new HttpError(
+      "Could not find a an items for the provided user id.",
+      404
+    );
+    return error;
+  }
   if (items.length === 0) {
-    return next(
-      new HttpError("Could not find a an items for the provided user id.", 404)
+    const error = new HttpError(
+      "Could not find a an items for the provided user id.",
+      404
     );
+    return error;
   } else {
-    res.json({ items });
+    return items;
   }
 }
-
-async function createItem(req, res, next) {
+//get item by id connect to the DB- fix the errors res
+async function createItem(req) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    console.log(errors);
-    return next(new HttpError("Invalid input, please check your data", 422));
+    // console.log(errors);
+    throw new HttpError("Invalid input, please check your data", 422);
   }
-  const { title, image, description, address, owner } = req.body;
+  const { title, image, description, address, owner } = req;
   let coordinates;
   try {
     coordinates = await getCoordinatesForAddress(address);
   } catch (error) {
-    return next(error);
+    throw error;
   }
-  const createdItem = new items({
+  const createdItem = await itemsControllers.create({
     title,
     image,
     description,
@@ -72,6 +77,7 @@ async function createItem(req, res, next) {
     location: coordinates,
     owner,
   });
+  console.log(createdItem);
   try {
     await createdItem.save();
   } catch (err) {
@@ -79,9 +85,9 @@ async function createItem(req, res, next) {
       "Creating new item failed, please try again",
       500
     );
-    return next(error);
+    throw error;
   }
-  res.status(201).json({ item: createdItem });
+  return createdItem;
 }
 
 async function updateItem(req, res, next) {
@@ -89,11 +95,10 @@ async function updateItem(req, res, next) {
   if (!errors.isEmpty()) {
     return next(new HttpError("Invalid input, please check your data", 422));
   } else {
-    const { title, image, description, address } = req.body;
+    const { title, image, description, address, owner } = req.body;
     const itemID = req.params.itmID;
 
-    const updatedItem = { ...DUMMY_ITEMS.find((i) => i.id === itemID) }; // updateing diffrent variable in case that something occur in the middle of the updateing
-    const itemIndex = DUMMY_ITEMS.findIndex((i) => i.id === itemID);
+    const updatedItem = await itemsControllers.readOne({ _id: itemID }); // updateing diffrent variable in case that something occur in the middle of the updateing
     let coordinates;
     try {
       coordinates = await getCoordinatesForAddress(address);
@@ -105,20 +110,24 @@ async function updateItem(req, res, next) {
     updatedItem.image = image;
     updatedItem.coordinates = coordinates;
     updatedItem.address = address;
+    updatedItem.owner = owner;
 
-    DUMMY_ITEMS[itemIndex] = updatedItem; // updateing the original object
+    await itemsControllers.update(itemID, updateItem); // updateing the original object
 
     res.status(200).json({ item: updatedItem });
   }
 }
 
-async function deleteItem(req, res, next) {
+async function deleteItem(req, next) {
   const itemID = req.params.itmID;
-  if (!DUMMY_ITEMS.find((i) => i.id === itemID)) {
+  const item = await itemsControllers.readOne({ _id: itemID });
+  if (!item.id === itemID) {
     return next(new HttpError("Could not find an item for that ID", 404));
+  } else {
+    return await itemsControllers.deleteById(itemID);
   }
-  DUMMY_ITEMS = DUMMY_ITEMS.filter((i) => i.id != itemID);
-  res.status(200).json({ message: "Item deleted successfully." });
+
+  // res.status(200).json({ message: "Item deleted successfully." });
 }
 
 exports.getAllItems = getAllItems;
