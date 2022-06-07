@@ -2,17 +2,17 @@ const express = require("express");
 const { check } = require("express-validator");
 const req = require("express/lib/request");
 const res = require("express/lib/response");
-
+const fileUpload = require("../Middleware/fileUpload");
 const router = express.Router();
 
 const itemsLogic = require("../BL/itemsLogic");
 // get all items
 router.get("/", async (req, res) => {
-  try {
-    res.send(await itemsLogic.getAllItems());
-  } catch (err) {
-    res.send(err);
-  }
+  let resu = await itemsLogic.getAllItems(req);
+  res.send(resu);
+  // } catch (err) {
+  //   return next(err);
+  // }
 });
 // get item by id
 router.get("/:itmID", async (req, res, next) => {
@@ -34,8 +34,9 @@ router.get("/byuser/:Uid", async (req, res, next) => {
 // create new item
 router.post(
   "/",
+  fileUpload.single("image"),
   check("title").notEmpty(),
-  check("address").notEmpty(),
+  check("address").notEmpty().isLength({ min: 2 }),
   async (req, res, next) => {
     try {
       res.send(await itemsLogic.createItem(req.body)).status(201);
@@ -48,7 +49,7 @@ router.post(
 router.patch(
   "/:itmID",
   check("title").notEmpty(),
-  check("address").notEmpty(),
+  check("address").notEmpty().isLength({ min: 2 }),
   itemsLogic.updateItem
 );
 // delete item

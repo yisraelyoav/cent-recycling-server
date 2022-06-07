@@ -20,7 +20,7 @@ async function getItemByID(req) {
         "Could not find a an item for the provided id.",
         404
       );
-      return error;
+      throw error;
     } else {
       return item;
     }
@@ -29,7 +29,7 @@ async function getItemByID(req) {
       "Something went wrong, could not find an item.",
       500
     );
-    return error;
+    throw error;
   }
 }
 // get item by user id
@@ -43,14 +43,14 @@ async function getItemsByUserID(req, res) {
       "Could not find a an items for the provided user id.",
       404
     );
-    return error;
+    throw error;
   }
   if (items.length === 0) {
     const error = new HttpError(
-      "Could not find a an items for the provided user id.",
+      "Could not find any items for the provided user id.",
       404
     );
-    return error;
+    throw error;
   } else {
     return items;
   }
@@ -77,7 +77,6 @@ async function createItem(req) {
     location: coordinates,
     owner,
   });
-  console.log(createdItem);
   try {
     await createdItem.save();
   } catch (err) {
