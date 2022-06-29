@@ -15,22 +15,37 @@ app.use(
     origin: "http://localhost:3000",
   })
 );
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE");
+
+  next();
+});
 
 app.use("/api/items", itemsRouter);
 app.use("/api/users", usersRouter);
 
-app.use((req, res, next) => {
-  const error = new HttpError("could not find this route", 404);
-  throw error;
-});
+// app.use((req, res, next) => {
+//   const error = new HttpError("could not find this route", 404);
+//   throw error;
+// });
 
 // error handeling middleware
 app.use((error, req, res, next) => {
+  if (req.file) {
+    fs.unlink(req.file.path, (err) => {
+      console.log(err);
+    });
+  }
   if (res.headerSent) {
     return next(error);
   }
   res.status(error.code || 500);
-  res.json({ message: error.message || "An unknoen error occurred!" });
+  res.json({ message: error.message || "An unknown error occurred!" });
 });
 
 const mongo_url = process.env.MONGO_URL;

@@ -12,41 +12,34 @@ async function signUp(req) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     console.log(errors);
-    throw new HttpError("Invalid input, please check your data.", 422);
+    const error = new HttpError("Invalid input, please check your data.", 422);
+    throw error;
   }
-  const { fName, lName, email, password, phone, items } = req;
+  const { fName, lName, email, password, phone } = req;
   let exsitingUser;
-  try {
-    exsitingUser = await usersControllers.readOne({ email: email });
-    if (!exsitingUser) {
-      const createdUser = await usersControllers.create({
-        fName,
-        lName,
-        email,
-        password,
-        phone,
-        items,
-      });
-      try {
-        await createdUser.save();
-        console.log(createdUser);
-      } catch (err) {
-        const error = new HttpError(
-          "Try signUp failed, please try again.",
-          500
-        );
-        throw error;
-      }
+  exsitingUser = await usersControllers.readOne({ email: email });
+  if (!exsitingUser) {
+    const createdUser = await usersControllers.create({
+      fName,
+      lName,
+      email,
+      password,
+      phone,
+    });
+    try {
+      await createdUser.save();
+      console.log(createdUser);
       return createdUser;
-    } else {
-      const error = new HttpError(
-        "This email already exists in the system, try to login. ",
-        422
-      );
+    } catch (err) {
+      const error = new HttpError("Try signUp failed, please try again.", 500);
       throw error;
     }
-  } catch (err) {
-    throw err;
+  } else {
+    const error = new HttpError(
+      "This email already exists in the system, try to login. ",
+      422
+    );
+    throw error;
   }
 }
 

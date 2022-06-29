@@ -3,7 +3,6 @@ const usersModel = require("../models/usersModel");
 async function read(filter, proj) {
   return await usersModel.find(filter, proj);
 }
-
 async function readOne(filter, proj) {
   return await usersModel.findOne(filter, proj);
 }

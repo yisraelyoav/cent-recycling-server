@@ -19,7 +19,7 @@ router.post(
   "/signup",
   check("fName").notEmpty().isAlpha("en-US", "-"),
   check("email").normalizeEmail().isEmail(),
-  check("lName").notEmpty(),
+  check("lName").notEmpty().isAlpha("en-US", "-"),
   check("password").isLength({ min: 6 }),
 
   async (req, res, next) => {
