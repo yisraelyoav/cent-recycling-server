@@ -31,6 +31,18 @@ router.post(
   }
 );
 
-// router.post("/login", usersLogic.login);
+router.post(
+  "/login",
+  check("email").normalizeEmail().isEmail(),
+  check("password").isLength({ min: 6 }),
+
+  async (req, res, next) => {
+    try {
+      res.send(await usersLogic.login(req.body)).status(200);
+    } catch (err) {
+      return next(err);
+    }
+  }
+);
 
 module.exports = router;

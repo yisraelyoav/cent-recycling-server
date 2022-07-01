@@ -44,14 +44,17 @@ async function signUp(req) {
 }
 
 async function login(req, res, next) {
-  const { email, password } = req.body;
-  const identifiedUser = DUMMY_USERS.find((u) => u.email === email);
+  const { email, password } = req;
+  const identifiedUser = await usersControllers.readOne({ email: email });
+  console.log(identifiedUser);
   if (!identifiedUser || identifiedUser.password != password) {
-    return next(new HttpError("Incorrect username or password.", 401));
-  } else
-    res.json({
-      message: ` ${identifiedUser.fName} ${identifiedUser.lName} logged in!`,
-    }); // dev
+    throw new HttpError("Incorrect username or password.", 401);
+  } else {
+    let succses = {
+      message: `${identifiedUser.fName} ${identifiedUser.lName} logged in`,
+    };
+    return succses;
+  }
 }
 exports.getAllUsers = getAllUsers;
 exports.signUp = signUp;
