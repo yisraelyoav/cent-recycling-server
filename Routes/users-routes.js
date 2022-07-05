@@ -35,7 +35,6 @@ router.post(
   "/login",
   check("email").normalizeEmail().isEmail(),
   check("password").isLength({ min: 6 }),
-
   async (req, res, next) => {
     try {
       res.send(await usersLogic.login(req.body)).status(200);

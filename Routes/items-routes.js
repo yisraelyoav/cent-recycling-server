@@ -8,11 +8,12 @@ const router = express.Router();
 const itemsLogic = require("../BL/itemsLogic");
 // get all items
 router.get("/", async (req, res) => {
-  let resu = await itemsLogic.getAllItems(req);
-  res.send(resu);
-  // } catch (err) {
-  //   return next(err);
-  // }
+  try {
+    let response = await itemsLogic.getAllItems(req);
+    res.send(response).status(200);
+  } catch (err) {
+    return next(err);
+  }
 });
 // get item by id
 router.get("/:itmID", async (req, res, next) => {
