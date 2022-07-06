@@ -1,7 +1,8 @@
 const HttpError = require("../DL/models/httpError");
 const { validationResult } = require("express-validator");
 const usersControllers = require("../DL/controllers/usersControllers");
-
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 async function getAllUsers(req, res, next) {
   const allUsers = await usersControllers.read(req);
   return allUsers;
@@ -27,16 +28,37 @@ async function signUp(req) {
   let exsitingUser;
   exsitingUser = await usersControllers.readOne({ email: email });
   if (!exsitingUser) {
+    let hashedPassword;
+    try {
+      hashedPassword = await bcrypt.hash(password, 12);
+    } catch (err) {
+      throw new HttpError("Try signUp failed, please try again.", 500);
+    }
     const createdUser = await usersControllers.create({
       fName,
       lName,
       email,
-      password,
+      password: hashedPassword,
       phone,
     });
     try {
       await createdUser.save();
-      return createdUser;
+      let token;
+      try {
+        token = jwt.sign(
+          {
+            userID: createdUser.id,
+            fName: createdUser.fName,
+            lName: createdUser.lName,
+          },
+          "אני_הרגתי_את_מופסה",
+          { expiresIn: 60 * 30 } //30 minutes
+        );
+      } catch (err) {
+        throw new HttpError("Try signUp failed, please try again.", 500);
+      }
+
+      return { userID: createdUser.id, token: token };
     } catch (err) {
       const error = new HttpError("Try signUp failed, please try again.", 500);
       throw error;
@@ -53,13 +75,35 @@ async function signUp(req) {
 async function login(req, res, next) {
   const { email, password } = req;
   const identifiedUser = await usersControllers.readOne({ email: email });
-  if (!identifiedUser || identifiedUser.password != password) {
+  if (!identifiedUser) {
     throw new HttpError("Incorrect username or password.", 401);
   } else {
-    let succses = {
-      message: `${identifiedUser.fName} ${identifiedUser.lName} logged in`,
-    };
-    return succses;
+    let isCorrecstPassword = false;
+    try {
+      isCorrecstPassword = await bcrypt.compare(
+        password,
+        identifiedUser.password
+      );
+    } catch (err) {
+      const error = new HttpError("Incorrect username or password.", 401);
+      return next(error);
+    }
+    if (!isCorrecstPassword) {
+    }
+    let token;
+    try {
+      token = jwt.sign(
+        {
+          userID: identifiedUser.id,
+          fName: identifiedUser.fName,
+          lName: identifiedUser.lName,
+        },
+        "אני_הרגתי_את_מופסה",
+        { expiresIn: 60 * 30 } //30 minutes
+      );
+    } catch (err) {}
+
+    return { userID: identifiedUser.id, token: token };
   }
 }
 exports.getAllUsers = getAllUsers;
