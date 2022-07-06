@@ -2,10 +2,18 @@ const HttpError = require("../DL/models/httpError");
 const { validationResult } = require("express-validator");
 const usersControllers = require("../DL/controllers/usersControllers");
 
-// get all users
 async function getAllUsers(req, res, next) {
   const allUsers = await usersControllers.read(req);
   return allUsers;
+}
+
+async function getUserByID(ID) {
+  const user = await usersControllers.readOne({ Id: ID });
+  if (!user) {
+    throw new HttpError("somthing went wrong,try again", 500);
+  } else {
+    return user;
+  }
 }
 
 async function signUp(req) {
@@ -28,7 +36,6 @@ async function signUp(req) {
     });
     try {
       await createdUser.save();
-      console.log(createdUser);
       return createdUser;
     } catch (err) {
       const error = new HttpError("Try signUp failed, please try again.", 500);
@@ -46,7 +53,6 @@ async function signUp(req) {
 async function login(req, res, next) {
   const { email, password } = req;
   const identifiedUser = await usersControllers.readOne({ email: email });
-  console.log(identifiedUser);
   if (!identifiedUser || identifiedUser.password != password) {
     throw new HttpError("Incorrect username or password.", 401);
   } else {
@@ -57,5 +63,6 @@ async function login(req, res, next) {
   }
 }
 exports.getAllUsers = getAllUsers;
+exports.getUserByID = getUserByID;
 exports.signUp = signUp;
 exports.login = login;

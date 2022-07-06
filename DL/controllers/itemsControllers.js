@@ -1,4 +1,5 @@
 const itemsModel = require("../models/itemsModel");
+const mongoose = require("mongoose");
 
 async function read(filter, proj) {
   return await itemsModel.find(filter, proj);
@@ -6,8 +7,14 @@ async function read(filter, proj) {
 async function readOne(filter, proj) {
   return await itemsModel.findOne(filter, proj);
 }
-async function create(newItem) {
-  return await itemsModel.create(newItem);
+async function create(newItem, user) {
+  const sess = await mongoose.startSession();
+  sess.startTransaction();
+  const item = await itemsModel.create(newItem);
+  user.items.push(item);
+  await user.save({ ssesion: sess });
+  await sess.commitTransaction();
+  return item;
 }
 async function update(id, updatedItem) {
   return await itemsModel.findByIdAndUpdate(id, updatedItem, { new: true });

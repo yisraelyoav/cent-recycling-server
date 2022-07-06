@@ -8,7 +8,7 @@ const userSchema = new Schema({
   phone: { type: String, required: true, unique: false },
   email: { type: String, required: true, unique: false },
   password: { type: String, required: true, minlength: 6 },
-  items: { type: String },
+  items: [{ type: mongoose.Types.ObjectId, ref: "Item" }],
 });
 // userSchema.plugin(uniqueValidator);
 module.exports = mongoose.model("User", userSchema);

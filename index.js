@@ -1,8 +1,13 @@
 require("dotenv").config();
+
+const fs = require("fs");
+const path = require("path");
+
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
+
 const itemsRouter = require("./Routes/items-routes");
 const usersRouter = require("./Routes/users-routes");
 const HttpError = require("./DL/models/httpError");
@@ -15,6 +20,7 @@ app.use(
     origin: "http://localhost:3000",
   })
 );
+
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
@@ -28,6 +34,8 @@ app.use((req, res, next) => {
 
 app.use("/api/items", itemsRouter);
 app.use("/api/users", usersRouter);
+
+app.use("/uploads/images", express.static(__dirname + "/uploads/images"));
 
 app.use((req, res, next) => {
   const error = new HttpError("could not find this route", 404);

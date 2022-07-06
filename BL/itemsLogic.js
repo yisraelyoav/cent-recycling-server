@@ -2,6 +2,7 @@ const HttpError = require("../DL/models/httpError");
 const { validationResult } = require("express-validator");
 const getCoordinatesForAddress = require("../util/location");
 const itemsControllers = require("../DL/controllers/itemsControllers");
+const usersLogic = require("./usersLogic");
 // const uuid = require("uuid");
 
 //get all items- connect to the DB- fix the errors res
@@ -55,28 +56,42 @@ async function getItemsByUserID(req, res) {
     return items;
   }
 }
-//get item by id connect to the DB- fix the errors res
 async function createItem(req) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    // console.log(errors);
     throw new HttpError("Invalid input, please check your data", 422);
   }
-  const { title, image, description, address, owner } = req;
+  const { title, description, address, owner } = req.body;
   let coordinates;
   try {
     coordinates = await getCoordinatesForAddress(address);
   } catch (error) {
     throw error;
   }
-  const createdItem = await itemsControllers.create({
-    title,
-    image,
-    description,
-    address,
-    location: coordinates,
-    owner,
-  });
+
+  let user;
+  try {
+    user = await usersLogic.getUserByID(owner);
+  } catch (err) {
+    const error = new HttpError("Adding an item faield, please try again", 500);
+    throw error;
+  }
+  if (!user) {
+    const error = new HttpError("could not find this user ID", 404);
+    return next(error);
+  }
+
+  const createdItem = await itemsControllers.create(
+    {
+      title,
+      image: req.file.path.replace("\\", "/"),
+      description,
+      address,
+      location: coordinates,
+      owner,
+    },
+    user
+  );
   try {
     await createdItem.save();
   } catch (err) {

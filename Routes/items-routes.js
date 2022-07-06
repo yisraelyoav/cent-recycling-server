@@ -40,7 +40,7 @@ router.post(
   check("address").notEmpty().isLength({ min: 2 }),
   async (req, res, next) => {
     try {
-      res.send(await itemsLogic.createItem(req.body)).status(201);
+      res.send(await itemsLogic.createItem(req)).status(201);
     } catch (err) {
       return next(err);
     }
