@@ -11,7 +11,7 @@ async function getAllItems(req) {
   return allItems;
 }
 //get item by id connect to the DB- fix the errors res
-async function getItemByID(req) {
+async function getItemsByID(req) {
   const itemID = req.params.itmID;
   let item;
   try {
@@ -35,7 +35,7 @@ async function getItemByID(req) {
 }
 // get item by user id
 async function getItemsByUserID(req, res) {
-  const userID = req.params.Uid;
+  const userID = req.headers.userID;
   let items;
   try {
     items = await itemsControllers.read({ owner: userID });
@@ -56,6 +56,7 @@ async function getItemsByUserID(req, res) {
     return items;
   }
 }
+
 async function createItem(req) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -112,6 +113,12 @@ async function updateItem(req, res, next) {
     const { title, image, description, address, owner } = req.body;
     const itemID = req.params.itmID;
 
+    if (owner !== req.userData.userID) {
+      throw new HttpError(
+        "Shame on you! you are not the owner of this item",
+        401
+      );
+    }
     const updatedItem = await itemsControllers.readOne({ _id: itemID }); // updateing diffrent variable in case that something occur in the middle of the updateing
     let coordinates;
     try {
@@ -145,7 +152,7 @@ async function deleteItem(req, next) {
 }
 
 exports.getAllItems = getAllItems;
-exports.getItemByID = getItemByID;
+exports.getItemsByID = getItemsByID;
 exports.getItemsByUserID = getItemsByUserID;
 exports.createItem = createItem;
 exports.updateItem = updateItem;

@@ -6,6 +6,7 @@ const fileUpload = require("../Middleware/fileUpload");
 const router = express.Router();
 
 const itemsLogic = require("../BL/itemsLogic");
+const checkAuth = require("../Middleware/checkAuth");
 // get all items
 router.get("/", async (req, res) => {
   try {
@@ -31,6 +32,8 @@ router.get("/byuser/:Uid", async (req, res, next) => {
     return next(err);
   }
 });
+
+router.use(checkAuth);
 
 // create new item
 router.post(

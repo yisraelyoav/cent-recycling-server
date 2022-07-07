@@ -89,6 +89,7 @@ async function login(req, res, next) {
       return next(error);
     }
     if (!isCorrecstPassword) {
+      throw new HttpError("Incorrect username or password.", 401);
     }
     let token;
     try {
