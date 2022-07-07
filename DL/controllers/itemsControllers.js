@@ -1,8 +1,12 @@
 const itemsModel = require("../models/itemsModel");
 const mongoose = require("mongoose");
+const { populate } = require("../models/itemsModel");
 
 async function read(filter, proj) {
   return await itemsModel.find(filter, proj);
+}
+async function readAndPopulate() {
+  return await itemsModel.find().populate("owner", "fName lName phone");
 }
 async function readOne(filter, proj) {
   return await itemsModel.findOne(filter, proj);
@@ -24,6 +28,7 @@ async function deleteById(filter) {
 }
 module.exports = {
   read,
+  readAndPopulate,
   readOne,
   create,
   update,

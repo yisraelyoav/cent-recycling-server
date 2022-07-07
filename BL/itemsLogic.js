@@ -5,7 +5,7 @@ const itemsControllers = require("../DL/controllers/itemsControllers");
 const usersLogic = require("./usersLogic");
 
 async function getAllItems(req) {
-  const allItems = await itemsControllers.read();
+  const allItems = await itemsControllers.readAndPopulate();
   return allItems;
 }
 async function getItemByID(req) {
