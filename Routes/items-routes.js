@@ -24,7 +24,8 @@ router.get("/:itmID", async (req, res, next) => {
     return next(err);
   }
 });
-// get items by user id
+
+router.use(checkAuth);
 router.get("/byuser/:Uid", async (req, res, next) => {
   try {
     res.send(await itemsLogic.getItemsByUserID(req));
@@ -32,8 +33,6 @@ router.get("/byuser/:Uid", async (req, res, next) => {
     return next(err);
   }
 });
-
-router.use(checkAuth);
 
 // create new item
 router.post(

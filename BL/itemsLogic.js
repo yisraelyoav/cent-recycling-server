@@ -3,15 +3,12 @@ const { validationResult } = require("express-validator");
 const getCoordinatesForAddress = require("../util/location");
 const itemsControllers = require("../DL/controllers/itemsControllers");
 const usersLogic = require("./usersLogic");
-// const uuid = require("uuid");
 
-//get all items- connect to the DB- fix the errors res
 async function getAllItems(req) {
   const allItems = await itemsControllers.read();
   return allItems;
 }
-//get item by id connect to the DB- fix the errors res
-async function getItemsByID(req) {
+async function getItemByID(req) {
   const itemID = req.params.itmID;
   let item;
   try {
@@ -33,9 +30,9 @@ async function getItemsByID(req) {
     throw error;
   }
 }
-// get item by user id
+
 async function getItemsByUserID(req, res) {
-  const userID = req.headers.userID;
+  const userID = req.userData.userID;
   let items;
   try {
     items = await itemsControllers.read({ owner: userID });
@@ -151,7 +148,7 @@ async function deleteItem(req, next) {
 }
 
 exports.getAllItems = getAllItems;
-exports.getItemsByID = getItemsByID;
+exports.getItemByID = getItemByID;
 exports.getItemsByUserID = getItemsByUserID;
 exports.createItem = createItem;
 exports.updateItem = updateItem;
