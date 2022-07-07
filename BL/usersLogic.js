@@ -9,7 +9,7 @@ async function getAllUsers(req, res, next) {
 }
 
 async function getUserByID(ID) {
-  const user = await usersControllers.readOne({ Id: ID });
+  const user = await usersControllers.readOne({ _id: ID });
   if (!user) {
     throw new HttpError("somthing went wrong,try again", 500);
   } else {

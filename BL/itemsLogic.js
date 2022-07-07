@@ -81,7 +81,6 @@ async function createItem(req) {
     const error = new HttpError("could not find this user ID", 404);
     return next(error);
   }
-
   const createdItem = await itemsControllers.create(
     {
       title,
