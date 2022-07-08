@@ -7,16 +7,16 @@ const router = express.Router();
 
 const itemsLogic = require("../BL/itemsLogic");
 const checkAuth = require("../Middleware/checkAuth");
-// get all items
-router.get("/", async (req, res) => {
+
+router.get("/", async (req, res, next) => {
   try {
-    let response = await itemsLogic.getAllItems(req);
+    let response = await itemsLogic.getAllItemsPopulated(req, res, next);
     res.send(response).status(200);
   } catch (err) {
     return next(err);
   }
 });
-// get item by id
+
 router.get("/:itmID", async (req, res, next) => {
   try {
     res.send(await itemsLogic.getItemByID(req));
@@ -28,7 +28,7 @@ router.get("/:itmID", async (req, res, next) => {
 router.use(checkAuth);
 router.get("/byuser/:Uid", async (req, res, next) => {
   try {
-    res.send(await itemsLogic.getItemsByUserID(req));
+    res.send(await itemsLogic.getItemsPopulatedByUserID(req));
   } catch (err) {
     return next(err);
   }

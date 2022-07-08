@@ -4,8 +4,12 @@ const getCoordinatesForAddress = require("../util/location");
 const itemsControllers = require("../DL/controllers/itemsControllers");
 const usersLogic = require("./usersLogic");
 
-async function getAllItems(req) {
-  const allItems = await itemsControllers.readAndPopulate();
+async function getAllItemsPopulated() {
+  const allItems = await itemsControllers.readAndPopulate(
+    {},
+    "owner",
+    "fName lName phone"
+  );
   return allItems;
 }
 async function getItemByID(req) {
@@ -31,11 +35,15 @@ async function getItemByID(req) {
   }
 }
 
-async function getItemsByUserID(req, res) {
+async function getItemsPopulatedByUserID(req, res) {
   const userID = req.userData.userID;
   let items;
   try {
-    items = await itemsControllers.read({ owner: userID });
+    items = await itemsControllers.readAndPopulate(
+      { owner: userID },
+      "owner",
+      "fName lName phone"
+    );
   } catch {
     const error = new HttpError(
       "Could not find a an items for the provided user id.",
@@ -115,7 +123,7 @@ async function updateItem(req, res, next) {
         401
       );
     }
-    const updatedItem = await itemsControllers.readOne({ _id: itemID }); // updateing diffrent variable in case that something occur in the middle of the updateing
+    const updatedItem = await itemsControllers.readOne({ _id: itemID });
     let coordinates;
     try {
       coordinates = await getCoordinatesForAddress(address);
@@ -129,7 +137,7 @@ async function updateItem(req, res, next) {
     updatedItem.address = address;
     updatedItem.owner = owner;
 
-    await itemsControllers.update(itemID, updateItem); // updateing the original object
+    await itemsControllers.update(itemID, updateItem);
 
     res.status(200).json({ item: updatedItem });
   }
@@ -147,9 +155,9 @@ async function deleteItem(req, next) {
   // res.status(200).json({ message: "Item deleted successfully." });
 }
 
-exports.getAllItems = getAllItems;
+exports.getAllItemsPopulated = getAllItemsPopulated;
 exports.getItemByID = getItemByID;
-exports.getItemsByUserID = getItemsByUserID;
+exports.getItemsPopulatedByUserID = getItemsPopulatedByUserID;
 exports.createItem = createItem;
 exports.updateItem = updateItem;
 exports.deleteItem = deleteItem;

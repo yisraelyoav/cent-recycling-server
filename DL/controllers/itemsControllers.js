@@ -5,8 +5,8 @@ const { populate } = require("../models/itemsModel");
 async function read(filter, proj) {
   return await itemsModel.find(filter, proj);
 }
-async function readAndPopulate() {
-  return await itemsModel.find().populate("owner", "fName lName phone");
+async function readAndPopulate(filter, path, select) {
+  return await itemsModel.find(filter).populate(path, select);
 }
 async function readOne(filter, proj) {
   return await itemsModel.findOne(filter, proj);
