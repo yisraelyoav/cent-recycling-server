@@ -58,7 +58,7 @@ async function signUp(req) {
         throw new HttpError("Try signUp failed, please try again.", 500);
       }
 
-      return { userID: createdUser.id, token: token };
+      return { userID: createdUser.id, token: token, fName: createdUser.fName };
     } catch (err) {
       const error = new HttpError("Try signUp failed, please try again.", 500);
       throw error;
@@ -103,8 +103,11 @@ async function login(req, res, next) {
         { expiresIn: 60 * 30 } //30 minutes
       );
     } catch (err) {}
-
-    return { userID: identifiedUser.id, token: token };
+    return {
+      userID: identifiedUser.id,
+      token: token,
+      fName: identifiedUser.fName,
+    };
   }
 }
 exports.getAllUsers = getAllUsers;
