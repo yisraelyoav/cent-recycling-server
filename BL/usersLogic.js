@@ -4,7 +4,7 @@ const usersControllers = require("../DL/controllers/usersControllers");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 async function getAllUsers(req, res, next) {
-  const allUsers = await usersControllers.read(req);
+  const allUsers = await usersControllers.read({}, "-password");
   return allUsers;
 }
 

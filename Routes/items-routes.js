@@ -17,6 +17,8 @@ router.get("/", async (req, res, next) => {
   }
 });
 
+router.use(checkAuth);
+
 router.get("/:itmID", async (req, res, next) => {
   try {
     res.send(await itemsLogic.getItemByID(req));
@@ -25,7 +27,6 @@ router.get("/:itmID", async (req, res, next) => {
   }
 });
 
-router.use(checkAuth);
 router.get("/byuser/:Uid", async (req, res, next) => {
   try {
     res.send(await itemsLogic.getItemsPopulatedByUserID(req));
@@ -34,7 +35,6 @@ router.get("/byuser/:Uid", async (req, res, next) => {
   }
 });
 
-// create new item
 router.post(
   "/",
   fileUpload.single("image"),
@@ -48,17 +48,17 @@ router.post(
     }
   }
 );
-// update item
+
 router.patch(
   "/:itmID",
   check("title").notEmpty(),
   check("address").notEmpty().isLength({ min: 2 }),
   itemsLogic.updateItem
 );
-// delete item
+
 router.delete("/:itmID", async (req, res, next) => {
   try {
-    res.send(await itemsLogic.deleteItem(req));
+    res.json(await itemsLogic.deleteItem(req)).status(200);
   } catch (err) {
     return next(err);
   }

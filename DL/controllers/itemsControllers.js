@@ -23,8 +23,15 @@ async function create(newItem, user) {
 async function update(id, updatedItem) {
   return await itemsModel.findByIdAndUpdate(id, updatedItem, { new: true });
 }
-async function deleteById(filter) {
-  return await itemsModel.findOneAndDelete(filter);
+async function deleteById(itemID) {
+  const sess = await mongoose.startSession();
+  sess.startTransaction();
+  const item = await itemsModel.findOne({ _id: itemID }).populate("owner");
+  await item.remove({ session: sess });
+  item.owner.items.pull(item);
+  await item.owner.save({ session: sess });
+  await sess.commitTransaction();
+  return "item deleted from items & owner";
 }
 module.exports = {
   read,

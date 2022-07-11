@@ -8,7 +8,7 @@ async function getAllItemsPopulated() {
   const allItems = await itemsControllers.readAndPopulate(
     {},
     "owner",
-    "fName lName phone"
+    "_id fName lName phone"
   );
   return allItems;
 }
@@ -46,20 +46,12 @@ async function getItemsPopulatedByUserID(req, res) {
     );
   } catch {
     const error = new HttpError(
-      "Could not find a an items for the provided user id.",
+      "Something went wrong but do not worry, we'll  find your stuff, eventually.",
       404
     );
     throw error;
   }
-  if (items.length === 0) {
-    const error = new HttpError(
-      "Could not find any items for the provided user id.",
-      404
-    );
-    throw error;
-  } else {
-    return items;
-  }
+  return items;
 }
 
 async function createItem(req) {
@@ -67,7 +59,7 @@ async function createItem(req) {
   if (!errors.isEmpty()) {
     throw new HttpError("Invalid input, please check your data", 422);
   }
-  const { title, description, address, owner } = req.body;
+  const { title, description, address } = req.body;
   let coordinates;
   try {
     coordinates = await getCoordinatesForAddress(address);
@@ -77,7 +69,7 @@ async function createItem(req) {
 
   let user;
   try {
-    user = await usersLogic.getUserByID(owner);
+    user = await usersLogic.getUserByID(req.userData.userID);
   } catch (err) {
     const error = new HttpError("Adding an item faield, please try again", 500);
     throw error;
@@ -93,7 +85,7 @@ async function createItem(req) {
       description,
       address,
       location: coordinates,
-      owner,
+      owner: req.userData.userID,
     },
     user
   );
@@ -151,8 +143,6 @@ async function deleteItem(req, next) {
   } else {
     return await itemsControllers.deleteById(itemID);
   }
-
-  // res.status(200).json({ message: "Item deleted successfully." });
 }
 
 exports.getAllItemsPopulated = getAllItemsPopulated;
