@@ -6,7 +6,7 @@ module.exports = (req, res, next) => {
     if (!token) {
       throw new Error("Authentication faield");
     }
-    const decodedToken = jwt.verify(token, "אני_הרגתי_את_מופסה");
+    const decodedToken = jwt.verify(token, process.env.jwt_KEY);
     req.userData = { userID: decodedToken.userID };
     next();
   } catch (err) {

@@ -51,7 +51,7 @@ async function signUp(req) {
             fName: createdUser.fName,
             lName: createdUser.lName,
           },
-          "אני_הרגתי_את_מופסה",
+          process.env.JWT_KEY,
           { expiresIn: 60 * 30 } //30 minutes
         );
       } catch (err) {
@@ -99,7 +99,7 @@ async function login(req, res, next) {
           fName: identifiedUser.fName,
           lName: identifiedUser.lName,
         },
-        "אני_הרגתי_את_מופסה",
+        process.env.JWT_KEY,
         { expiresIn: 60 * 30 } //30 minutes
       );
     } catch (err) {}
