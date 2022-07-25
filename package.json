@@ -19,7 +19,8 @@
   },
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "build":"CI= npm run build"
   },
   "author": "yisrael zelickovich",
   "license": "ISC"

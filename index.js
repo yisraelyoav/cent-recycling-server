@@ -61,7 +61,7 @@ const mongo_url = process.env.MONGO_URL;
 mongoose
   .connect(mongo_url)
   .then(() => {
-    app.listen(process.anv.PORT || 5000);
+    app.listen(process.env.PORT || 5000);
     console.log("server is listening");
   })
   .catch((err) => console.log(err));
