@@ -17,7 +17,7 @@ app.use(bodyParser.json());
 
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: "https://62de5c2bd621ec0fb2cd9515--cent-recycling-project-mern-stack.netlify.app/","http://localhost:3000",
   })
 );
 
